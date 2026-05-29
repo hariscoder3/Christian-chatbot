@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python backend
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# raw bible source (reproducible via download + prepare_bible.py; kjv.json is committed)
+backend/data/bible/kjv_raw.json

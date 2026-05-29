@@ -1,26 +1,151 @@
 @import "tailwindcss";
 
+/* ─────────────── Design tokens (warm sacred) ─────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg:          #FAF6EE;   /* parchment cream */
+  --surface:     #FFFFFF;   /* card background */
+  --surface-2:   #F4EEDF;   /* nested card / muted surface */
+  --ink:         #1F1A14;   /* primary text */
+  --ink-soft:    #6C6354;   /* secondary text */
+  --accent:      #B47A24;   /* warm amber */
+  --accent-soft: #FBEFD8;   /* amber tint surface */
+  --plum:        #6B2C4A;   /* deep plum, sparing */
+  --verify:      #5A8047;   /* citation-verified */
+  --warn:        #B25A2C;   /* unverified / safety */
+  --border:      #E6DCC6;   /* dividers */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg:          #14110E;
+    --surface:     #1B1714;
+    --surface-2:   #221C18;
+    --ink:         #F1E9D8;
+    --ink-soft:    #B8AC92;
+    --accent:      #D4923A;
+    --accent-soft: #2B2218;
+    --plum:        #C8779A;
+    --verify:      #9BCB85;
+    --warn:        #E59668;
+    --border:      #2D2620;
   }
 }
 
+/* Map tokens into Tailwind v4 utility classes (bg-bg, text-ink, etc.) */
+@theme inline {
+  --color-bg:          var(--bg);
+  --color-surface:     var(--surface);
+  --color-surface-2:   var(--surface-2);
+  --color-ink:         var(--ink);
+  --color-ink-soft:    var(--ink-soft);
+  --color-accent:      var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-plum:        var(--plum);
+  --color-verify:      var(--verify);
+  --color-warn:        var(--warn);
+  --color-border:      var(--border);
+
+  --font-sans:  var(--font-geist-sans);
+  --font-mono:  var(--font-geist-mono);
+  --font-serif: var(--font-lora);
+}
+
+/* ─────────────── Base ─────────────── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 60rem 40rem at top left,    rgba(180, 122, 36, 0.075), transparent 60%),
+    radial-gradient(ellipse 50rem 36rem at bottom right, rgba(107, 44, 74, 0.045), transparent 60%);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  position: relative;
+}
+
+/* Subtle SVG grain overlay so the cream surface has texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-color-scheme: dark) {
+  body::before { mix-blend-mode: screen; opacity: 0.05; }
+}
+
+/* Anything in <body> should sit above the grain layer */
+body > * { position: relative; z-index: 1; }
+
+/* ─────────────── Keyframes ─────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.animate-fade-up { animation: fade-up 320ms cubic-bezier(.16,1,.3,1) both; }
+
+@keyframes cursor-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.animate-cursor {
+  animation: cursor-blink 0.95s steps(2, end) infinite;
+  border-radius: 1px;
+}
+
+@keyframes pulse-glow {
+  0%   { box-shadow: 0 0 0 0   rgba(180, 122, 36, 0.35); }
+  60%  { box-shadow: 0 0 0 10px rgba(180, 122, 36, 0);   }
+  100% { box-shadow: 0 0 0 0   rgba(180, 122, 36, 0);   }
+}
+.pulse-glow:focus-visible,
+.pulse-glow:hover { animation: pulse-glow 1.2s ease-out 1; }
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton-bar {
+  background: linear-gradient(90deg,
+    var(--surface-2) 0%,
+    color-mix(in oklab, var(--surface-2), var(--accent-soft) 70%) 50%,
+    var(--surface-2) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* Smooth segmented-control indicator slide */
+.tab-indicator {
+  transition: transform 220ms cubic-bezier(.4, 0, .2, 1);
+}
+
+/* Hide native select arrow (we paint our own caret) */
+.bare-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}
+
+/* Focus rings unified to the warm accent */
+*:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Smooth scroll for in-page anchoring; respects user pref */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-fade-up, .animate-cursor, .skeleton-bar, .tab-indicator,
+  .pulse-glow:hover, .pulse-glow:focus-visible {
+    animation: none !important;
+    transition: none !important;
+  }
 }
